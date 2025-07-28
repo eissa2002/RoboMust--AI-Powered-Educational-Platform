@@ -1,5 +1,3 @@
-# online/llm/inference.py
-
 import os
 import sys
 from typing import Tuple
@@ -8,44 +6,65 @@ from typing import Tuple
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.insert(0, project_root)
 
-from langchain_community.llms import Ollama
+from langchain_ollama import OllamaLLM  
 from online.retrieval.retriever import get_relevant_chunks
 
 # instantiate your local LLM
-llm = Ollama(model="llama3.2", temperature=0)
+llm = OllamaLLM(model="llama3.1:8b", temperature=0)
 
 def generate_answer(
     chunks,
-    question: str
+    question: str,
+    chat_history=None,
+    target_lang: str = "en"
 ) -> Tuple[str, str]:
     """
     Returns (answer_text, citation_text).
+    target_lang: "en" or "ar"
+    chat_history: list of dicts [{"role":"user"|"bot","text":...}]
     """
     if not chunks:
         return "Sorry, I don’t know.", ""
 
-    # 1) Build a bullet-list context from the chunks
+    # Build context from chunks
     context = "\n".join(f"- {chunk.page_content.strip()}" for chunk in chunks)
 
-    # 2) Put that into your prompt
-    prompt_text = f"""
-You are a knowledgeable AI tutor. Answer the student’s question using
-only the information in the bullets below. You may restate or summarize in your own words,
-but do not introduce new concepts.
+    # Format chat history for prompt
+    history_str = ""
+    if chat_history:
+        lines = []
+        for turn in chat_history:
+            prefix = "Student:" if turn.get("role") == "user" else "Tutor:"
+            lines.append(f"{prefix} {turn.get('text')}")
+        history_str = "\n".join(lines)
 
-Context:
+    # Instruction based on target language
+    if target_lang == "ar":
+        instr = "Answer (in Arabic only):"
+    else:
+        instr = "Answer (in English only):"
+
+    # Construct prompt
+    prompt_text = f"""
+You are a knowledgeable AI tutor. Use only the information in the bullets below to answer the student's question.
+Restate or summarize as needed, but do not introduce new concepts.
+
+Conversation so far:
+{history_str}
+
+Reference context:
 {context}
 
-Question: {question}
+Student's new question: {question}
 
-Answer (in English only):
+{instr}
 """.strip()
 
-    # 3) Call the LLM
+    # Call LLM
     response = llm.generate([prompt_text])
     answer = response.generations[0][0].text.strip()
 
-    # 4) Build citation list
+    # Build citations from chunk metadata
     sources = []
     for chunk in chunks:
         md = chunk.metadata

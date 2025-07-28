@@ -1,0 +1,42 @@
+[
+  {
+    "role": "user",
+    "text": "hello"
+  },
+  {
+    "role": "assistant",
+    "text": "Hi there! What would you like to learn?",
+    "citation": "",
+    "audio_url": "/audio/f8f1454a17b54b569f8a13c13e0158eb_out.wav"
+  },
+  {
+    "role": "user",
+    "text": "tell me about class recognition"
+  },
+  {
+    "role": "assistant",
+    "text": "Class Recognition is also known as category-level or generic object recognition. It involves recognizing any instance of a particular general class, such as \"cat\", \"car\", or \"bicycle\". This problem is considered more challenging than Instance Recognition because it requires identifying objects at a higher level of abstraction, without knowing the specific instance or details of the object.",
+    "citation": "- 04_Feature Detection and Matching.pdf (page 3)\n- 04_Feature Detection and Matching.pdf (page 14)\n- 02_Object Detection.pdf (page 3)",
+    "audio_url": "/audio/1a144ff3b51e45acae470dce4a71596e_out.wav"
+  },
+  {
+    "role": "user",
+    "text": "can you discuss more"
+  },
+  {
+    "role": "assistant",
+    "text": "Let's dive deeper into Class Recognition.\n\nAs I mentioned earlier, it involves recognizing any instance of a particular general class, such as \"cat\", \"car\", or \"bicycle\". This is considered a challenging problem because it requires identifying objects at a higher level of abstraction, without knowing the specific instance or details of the object.\n\nTo give you a better idea, let's consider how we can approach Class Recognition. One way to do this is by using feature description and motion models. For example, if we're trying to recognize a car, we might use features such as its shape, size, and color, along with its motion patterns, like speed and direction.\n\nHowever, the problem becomes more complex when dealing with different types of transformations, such as translation, rotation, and perspective. Each of these transformations introduces additional unknowns that need to be accounted for in the recognition process.\n\nFor instance:\n\n* Translation involves 2 unknowns (x and y coordinates)\n* Affine transformation involves 6 unknowns\n* Perspective transformation involves 8 unknowns\n* 3D rotation involves 3 unknowns\n\nThese unknowns can make it difficult to accurately recognize objects, especially when they are viewed from different angles or positions.\n\nTo tackle this challenge, researchers often blend multiple features and models together to create a mosaic of information. This approach allows for more robust recognition and can improve the accuracy of Class Recognition systems.\n\nDoes that help clarify things?",
+    "citation": "- 04_Feature Detection and Matching.pdf (page 50)\n- 05_Image Stitching.pdf (page 24)\n- 05_Image Stitching.pdf (page 7)",
+    "audio_url": "/audio/504265d9630c45bb883468557b3860e5_out.wav"
+  },
+  {
+    "role": "user",
+    "text": "thank u"
+  },
+  {
+    "role": "assistant",
+    "text": "You're welcome! Is there something specific you'd like me to clarify or expand on regarding Class Recognition?",
+    "citation": "- 02_Object Detection.pdf (page 1)\n- 05_Image Stitching.pdf (page 1)\n- 05_Image Stitching.pdf (page 7)",
+    "audio_url": "/audio/97a63ed8be7d4728ad1f280725799b8d_out.wav"
+  }
+]

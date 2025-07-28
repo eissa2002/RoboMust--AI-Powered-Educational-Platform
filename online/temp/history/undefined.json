@@ -1,0 +1,32 @@
+[
+  {
+    "role": "user",
+    "text": "hello"
+  },
+  {
+    "role": "assistant",
+    "text": "Hello! How can I help you today?",
+    "citation": "",
+    "audio_url": "/audio/a67ac265b7f043e9af1d7156fe372d2b_out.wav"
+  },
+  {
+    "role": "user",
+    "text": "hello"
+  },
+  {
+    "role": "assistant",
+    "text": "Hey! Ask me anything from your material.",
+    "citation": "",
+    "audio_url": "/audio/eddc2434b55b41848d5bcac72edfd907_out.wav"
+  },
+  {
+    "role": "user",
+    "text": "hello"
+  },
+  {
+    "role": "assistant",
+    "text": "Hello! How can I help you today?",
+    "citation": "",
+    "audio_url": "/audio/f0c85f8baa59484981bcbf0ad01ad0ca_out.wav"
+  }
+]

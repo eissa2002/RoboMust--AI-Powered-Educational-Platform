@@ -3,233 +3,1269 @@
 
 <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Voice-Enabled RAG Tutor</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
     <style>
-        * {
-            box-sizing: border-box;
+        /* ── SIDEBAR ── */
+        .sidebar {
+            width: 240px;
+            background: #fff;
+            border-right: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            transition: width .3s ease;
         }
 
+        .sidebar.closed {
+            width: 0;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 1rem;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .sidebar-header button {
+            background: #4caf50;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: .6rem;
+            font-size: .95rem;
+            cursor: pointer;
+        }
+
+        #openSidebarBtn {
+            display: none;
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 1001;
+        }
+
+        .session-list {
+            flex: 1;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            overflow-y: auto;
+        }
+
+        .session-list li {
+            position: relative;
+            padding: .6rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: visible;
+            transition: background .2s;
+        }
+
+        .session-list li:hover {
+            background: #f1f1f1;
+        }
+
+        .session-list li.active {
+            background: #e8f5e9;
+            font-weight: 500;
+        }
+
+        .ellipsis-btn {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: #1976d2;
+        }
+
+        .session-list li:hover .ellipsis-btn {
+            display: block;
+        }
+
+        .context-menu {
+            position: absolute;
+            top: 100%;
+            right: 1rem;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, .1);
+            display: none;
+            z-index: 100;
+        }
+
+        .context-menu.active {
+            display: block;
+        }
+
+        .context-menu button {
+            display: block;
+            width: 100%;
+            padding: .5rem 1rem;
+            background: none;
+            border: none;
+            text-align: left;
+            cursor: pointer;
+            color: #333;
+        }
+
+        .context-menu button:hover {
+            background: #f1f1f1;
+        }
+
+        /* ── AUTH BUTTONS ── */
+        .auth-buttons {
+            padding: 1rem;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            gap: .5rem;
+        }
+
+        .auth-buttons button {
+            background: #4caf50;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: .6rem;
+            font-size: .95rem;
+            cursor: pointer;
+        }
+
+        #signOutBtn {
+            background: #d32f2f;
+        }
+
+        /* ── MODALS ── */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .modal.hidden {
+            display: none;
+        }
+
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, .4);
+        }
+
+        .modal-box {
+            position: relative;
+            background: #1f1f1f;
+            color: #f0f0f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            width: 320px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .3);
+        }
+
+        .modal-box h3 {
+            margin: 0 0 .5rem;
+            font-size: 1.2rem;
+        }
+
+        .modal-box p {
+            margin: 0 0 1.5rem;
+            font-size: .95rem;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: .5rem;
+        }
+
+        #modalCancel,
+        #authCancelBtn {
+            background: none;
+            border: 1px solid #555;
+            color: #ccc;
+            padding: .4rem .8rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #modalConfirmDelete {
+            background: #d32f2f;
+            border: none;
+            color: #fff;
+            padding: .4rem .8rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #modalConfirmDelete:hover {
+            background: #b71c1c;
+        }
+
+        #modalCancel:hover,
+        #authCancelBtn:hover {
+            background: #333;
+        }
+
+        /* ── AUTH MODAL CONTENT ── */
+        #authModal .modal-box {
+            background: #fff;
+            color: #000;
+        }
+
+        #authModal h3 {
+            color: #333;
+        }
+
+        #authModal input {
+            width: 100%;
+            margin-bottom: .7rem;
+            padding: .5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: .95rem;
+        }
+
+        #authForm .auth-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: .5rem;
+        }
+
+        #authForm button[type="submit"] {
+            background: #4caf50;
+            color: #fff;
+            border: none;
+            padding: .5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .g_id_signin {
+            justify-content: center;
+            margin-bottom: .7rem;
+        }
+
+        #authError {
+            color: #d32f2f;
+            font-size: .9rem;
+            margin-bottom: .75rem;
+            min-height: 1.2em;
+        }
+
+        /* ── CHAT STYLES ── */
         body {
             margin: 0;
             padding: 0;
             font-family: 'Roboto', sans-serif;
             background: #f0f2f5;
-            color: #333;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
         }
 
         .container {
-            max-width: 720px;
-            margin: 2rem auto;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .chat-main {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+        }
+
+        .chat-section {
+            flex: 4;
+            display: flex;
+            flex-direction: column;
             background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border-radius: 16px 0 0 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, .08);
+            position: relative;
+        }
+
+        .chat-history {
+            flex: 1 1 auto;
+            overflow-y: auto;
             padding: 2rem;
+            padding-bottom: 9rem;
+            display: flex;
+            flex-direction: column;
         }
 
-        h1 {
-            text-align: center;
-            margin-bottom: 1.5rem;
-            font-weight: 700;
-            color: #2c3e50;
+        .chat-input-area {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #fafafa;
+            border-top: 1px solid #e0e0e0;
+            padding: 1.2rem 2rem;
+            display: flex;
+            align-items: flex-end;
+            gap: .7rem;
+            z-index: 10;
         }
 
-        #avatar {
-            display: block;
-            margin: 0 auto 1.5rem;
-            width: 180px;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        #chatForm {
+            flex: 1;
+            display: flex;
+        }
+
+        #questionInput {
+            flex: 1;
+            padding: .7rem 1rem;
+            border: 1px solid #b0b0b0;
+            border-radius: 4px;
+            font-size: 1rem;
+            outline: none;
+            resize: none;
+            max-height: 150px;
+            overflow-y: auto;
+            line-height: 1.4;
         }
 
         .controls {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        .controls input {
-            padding: 0.5rem;
-            width: 60%;
-            margin-right: 0.5rem;
-            font-size: 1rem;
+            display: flex;
+            gap: .7rem;
         }
 
         .controls button {
             background: #4caf50;
-            color: white;
+            color: #fff;
             border: none;
-            padding: 0.7rem 1.4rem;
-            margin: 0 0.2rem;
             border-radius: 4px;
+            padding: 0 1rem;
+            height: 36px;
             font-size: 1rem;
             font-weight: 500;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: background .2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .controls button:disabled {
             background: #a5d6a7;
             cursor: not-allowed;
+            color: #eee;
         }
 
-        .controls button:hover:not(:disabled) {
-            background: #43a047;
+        #recordBtn,
+        #stopBtn {
+            padding: 0;
+            width: 36px;
         }
 
-        .panel {
-            background: #fafafa;
-            border-left: 4px solid #4caf50;
-            border-radius: 4px;
-            padding: 1rem;
-            margin-bottom: 1.5rem;
+        #stopBtn {
+            display: none;
         }
 
-        .panel strong {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
+        .avatar-section {
+            flex: 2;
+            background: #f6fafd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0 16px 16px 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, .04);
+            position: relative;
         }
 
-        #responseAudio {
-            width: 100%;
-            margin-top: 1rem;
-            outline: none;
+        .avatar-section video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 350px;
+            max-width: 90vw;
+            border-radius: 16px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, .13);
         }
 
-        @media (max-width: 600px) {
-            .container {
-                margin: 1rem;
-                padding: 1rem;
+        .hidden {
+            display: none;
+        }
+
+        .msg-row {
+            margin-bottom: 1.1rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .msg-user {
+            align-items: flex-end;
+        }
+
+        .msg-bot {
+            align-items: flex-start;
+        }
+
+        .msg-bubble {
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            max-width: 80%;
+            font-size: 1.08rem;
+            line-height: 1.5;
+            background: #e7fbe9;
+            color: #333;
+            word-break: break-word;
+            box-shadow: 0 1px 3px rgba(44, 62, 80, .03);
+        }
+
+        .msg-user .msg-bubble {
+            background: #e8edff;
+        }
+
+        .citation-list {
+            color: #728099;
+            font-size: .93rem;
+            margin: .4rem 0 0 14px;
+            line-height: 1.4;
+            white-space: pre-line;
+        }
+
+        .audio-row {
+            margin: .2rem 0 .8rem 0;
+        }
+
+        .waiting-loader-bubble {
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .waiting-loader {
+            display: flex;
+            align-items: center;
+            background: #e7fbe9;
+            border-radius: 10px;
+            padding: 1rem 1.5rem;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            margin: 0 5px;
+            background: #b0b4bd;
+            border-radius: 50%;
+            opacity: .7;
+            animation: blink 1.3s infinite both;
+        }
+
+        .dot:nth-child(2) {
+            animation-delay: .18s;
+        }
+
+        .dot:nth-child(3) {
+            animation-delay: .36s;
+        }
+
+        @keyframes blink {
+
+            0%,
+            80%,
+            100% {
+                opacity: .3;
             }
 
-            #avatar {
-                width: 120px;
+            40% {
+                opacity: 1;
+            }
+        }
+
+        .inline-translate {
+            margin-left: 14px;
+            font-size: .9rem;
+            background: none;
+            border: none;
+            color: #1976d2;
+            cursor: pointer;
+        }
+
+        @media(max-width:900px) {
+            .sidebar {
+                display: none;
             }
 
-            .controls button {
-                padding: 0.6rem 1rem;
-                font-size: 0.9rem;
+            .chat-main {
+                flex-direction: column;
+            }
+
+            .avatar-section {
+                height: 280px;
+            }
+
+            .chat-section {
+                border-radius: 16px 16px 0 0;
+            }
+        }
+
+        @media(max-width:600px) {
+            .chat-input-area {
+                flex-wrap: wrap;
             }
         }
     </style>
+
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 
 <body>
+    <!-- SIDEBAR TOGGLE -->
+    <button id="openSidebarBtn" title="Open sidebar">☰</button>
+    <div class="sidebar closed" id="sidebar">
+        <div class="sidebar-header">
+            <button id="toggleSidebarBtn">☰</button>
+            <button id="newChatBtn">New Chat</button>
+        </div>
+        <ul class="session-list" id="sessionList"></ul>
+        <!-- AUTH BUTTONS -->
+        <div class="auth-buttons">
+            <button id="signUpBtn">Sign Up</button>
+            <button id="signInBtn">Sign In</button>
+            <button id="signOutBtn" hidden>Sign Out</button>
+        </div>
+    </div>
+
+    <!-- CHAT AREA -->
     <div class="container">
-        <h1>Voice-Enabled RAG Tutor</h1>
-        <video id="avatar" src="/static/avatar waiting.mp4" autoplay loop muted></video>
+        <div class="chat-main">
+            <div class="chat-section">
+                <div class="chat-history" id="chatHistory"></div>
+                <div class="chat-input-area">
+                    <form id="chatForm" autocomplete="off">
+                        <textarea id="questionInput" rows="1" placeholder="Type your question…"></textarea>
+                    </form>
+                    <div class="controls">
+                        <button id="sendBtn" title="Send">Send</button>
+                        <button id="recordBtn" title="Record">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff">
+                                <path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3z" />
+                                <path d="M19 11a7 7 0 0 1-14 0H3a9 9 0 0 0 18 0h-2z" />
+                                <rect x="11" y="17" width="2" height="4" fill="#fff" />
+                            </svg>
+                        </button>
+                        <button id="stopBtn" disabled title="Stop">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="#fff">
+                                <rect x="3" y="3" width="10" height="10" rx="2" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="avatar-section">
+                <video id="avatarWaiting" src="/static/avatar waiting.mp4" autoplay loop muted playsinline></video>
+                <video id="avatarTalking" class="hidden" src="/static/avatar talking.mp4" autoplay loop muted
+                    playsinline></video>
+            </div>
+        </div>
+    </div>
 
-        <div class="controls">
-            <!-- TEXT CHAT -->
-            <input id="chatInput" type="text" placeholder="Type your question…" />
-            <button id="sendBtn">✉️ Send</button>
-            <br /><br />
-            <!-- VOICE CHAT -->
-            <button id="recordBtn">🎤 Record Question</button>
-            <button id="stopBtn" disabled>⏹ Stop</button>
-        </div>
+    <audio id="responseAudio" controls style="display:none"></audio>
 
-        <div class="panel" id="transcript">
-            <strong>Transcript:</strong>
-            <div id="txt">—</div>
+    <!-- DELETE CHAT MODAL -->
+    <div id="deleteModal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-box">
+            <h3>Delete chat?</h3>
+            <p>This will delete <strong><span id="modalSessionName"></span></strong>.</p>
+            <div class="modal-buttons">
+                <button id="modalCancel">Cancel</button>
+                <button id="modalConfirmDelete">Delete</button>
+            </div>
         </div>
-        <div class="panel" id="answer">
-            <strong>Answer:</strong>
-            <div id="ans">—</div>
-        </div>
-        <div class="panel" id="citation">
-            <strong>Sources:</strong>
-            <div id="cite">—</div>
-        </div>
+    </div>
 
-        <audio id="responseAudio" controls></audio>
+    <!-- AUTH MODAL -->
+    <div id="authModal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-box">
+            <h3 id="authModeTitle"></h3>
+            <div id="authError"></div>
+            <div id="g_id_onload"
+                data-client_id="179290570443-m7j4913a76t2j1g1o3rdgpv05od2q2ng.apps.googleusercontent.com"
+                data-callback="handleGoogleCredential" data-auto_prompt="false"></div>
+            <div class="g_id_signin" data-type="standard"></div>
+            <form id="authForm">
+                <input type="email" id="authEmail" placeholder="Email" required />
+                <input type="password" id="authPassword" placeholder="Password" required />
+                <input type="password" id="authPasswordConfirm" placeholder="Confirm Password" class="hidden"
+                    required />
+                <div class="auth-actions">
+                    <button type="submit" id="authSubmitBtn"></button>
+                    <button type="button" id="authCancelBtn">Cancel</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script>
-        let mediaRecorder, audioChunks = [], userStream;
-        const avatarEl = document.getElementById("avatar");
-        const recordBtn = document.getElementById("recordBtn");
-        const stopBtn = document.getElementById("stopBtn");
-        const chatInput = document.getElementById("chatInput");
-        const sendBtn = document.getElementById("sendBtn");
-        const txtEl = document.getElementById("txt");
-        const ansEl = document.getElementById("ans");
-        const citeEl = document.getElementById("cite");
-        const audioEl = document.getElementById("responseAudio");
+        // ── In‑memory auth flag & per‑session buffer ──
+        let authenticated = false;
+        const sessionHistories = {};
 
-        // —— TEXT CHAT ——
-        sendBtn.addEventListener("click", async () => {
-            const question = chatInput.value.trim();
-            if (!question) return;
-            // disable all controls
-            [sendBtn, recordBtn, stopBtn].forEach(b => b.disabled = true);
-            txtEl.textContent = question;
-            ansEl.textContent = "…thinking…";
-            citeEl.textContent = "—";
+        // ── AUTH FETCH ── always send cookie
+        function authFetch(url, opts = {}) {
+            return fetch(url, { credentials: 'include', ...opts });
+        }
 
-            const form = new FormData();
-            form.append("question", question);
-            const res = await fetch("/chat/", { method: "POST", body: form });
-            const data = await res.json();
+        // ── Sidebar toggle ──
+        const openSidebarBtn = document.getElementById('openSidebarBtn'),
+            toggleSidebarBtn = document.getElementById('toggleSidebarBtn'),
+            sidebar = document.getElementById('sidebar');
+        function updateSidebarToggle() {
+            openSidebarBtn.style.display = sidebar.classList.contains('closed') ? 'block' : 'none';
+        }
+        toggleSidebarBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('closed');
+            updateSidebarToggle();
+        });
+        openSidebarBtn.addEventListener('click', () => {
+            sidebar.classList.remove('closed');
+            updateSidebarToggle();
+        });
 
-            // render
-            ansEl.textContent = data.answer;
-            citeEl.innerHTML = data.citation
-                ? data.citation.replace(/\n/g, "<br/>")
-                : "—";
+        // ── AUTH MODAL ──
+        const signUpBtn = document.getElementById('signUpBtn'),
+            signInBtn = document.getElementById('signInBtn'),
+            signOutBtn = document.getElementById('signOutBtn'),
+            authModal = document.getElementById('authModal'),
+            authModeTitle = document.getElementById('authModeTitle'),
+            authForm = document.getElementById('authForm'),
+            authEmail = document.getElementById('authEmail'),
+            authPass = document.getElementById('authPassword'),
+            authPassConfirm = document.getElementById('authPasswordConfirm'),
+            authSubmitBtn = document.getElementById('authSubmitBtn'),
+            authCancelBtn = document.getElementById('authCancelBtn'),
+            authError = document.getElementById('authError');
+        let authMode = 'Sign In';
 
-            if (data.audio_url) {
-                audioEl.src = data.audio_url;
-                audioEl.onplay = () => avatarEl.src = "/static/avatar talking.mp4";
-                audioEl.onended = () => avatarEl.src = "/static/avatar waiting.mp4";
-                audioEl.play();
+        function openAuthModal(mode) {
+            authMode = mode;
+            authModeTitle.textContent = mode;
+            authSubmitBtn.textContent = mode;
+            authEmail.value = '';
+            authPass.value = '';
+            authPassConfirm.value = '';
+            authError.textContent = '';
+            if (mode === 'Sign Up') {
+                authPassConfirm.classList.remove('hidden');
+                authPassConfirm.required = true;
+            } else {
+                authPassConfirm.classList.add('hidden');
+                authPassConfirm.required = false;
+            }
+            authModal.classList.remove('hidden');
+        }
+        function closeAuthModal() {
+            authModal.classList.add('hidden');
+        }
+        signUpBtn.onclick = () => openAuthModal('Sign Up');
+        signInBtn.onclick = () => openAuthModal('Sign In');
+        authCancelBtn.onclick = closeAuthModal;
+
+        authForm.onsubmit = async e => {
+            e.preventDefault();
+            authError.textContent = '';
+
+            if (authMode === 'Sign Up' && authPass.value !== authPassConfirm.value) {
+                authError.textContent = 'Passwords do not match.';
+                return;
             }
 
-            // re-enable
-            sendBtn.disabled = false;
-            recordBtn.disabled = false;
+            const url = authMode === 'Sign Up' ? '/auth/signup' : '/auth/login';
+            try {
+                const res = await fetch(url, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: authEmail.value.trim(),
+                        password: authPass.value
+                    })
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    authError.textContent = data.detail || 'Authentication failed.';
+                    return;
+                }
+                authenticated = true;
+                closeAuthModal();
+                signUpBtn.hidden = true;
+                signInBtn.hidden = true;
+                signOutBtn.hidden = false;
+                await loadSessions();
+                const firstLi = document.querySelector('#sessionList li');
+                if (firstLi) firstLi.click();
+            } catch {
+                authError.textContent = 'Network error—please try again.';
+            }
+        };
+
+        signOutBtn.onclick = async () => {
+            await fetch('/auth/logout', { method: 'POST', credentials: 'include' });
+            authenticated = false;
+            signUpBtn.hidden = false;
+            signInBtn.hidden = false;
+            signOutBtn.hidden = true;
+            document.getElementById('sessionList').innerHTML = '';
+            chatHistory = [];
+            renderChat();
+        };
+
+        // ── GOOGLE SIGN‑IN CALLBACK ──
+        async function handleGoogleCredential(response) {
+            const idToken = (typeof response === 'string') ? response : response.credential;
+            if (authMode === 'Sign Up') {
+                authError.textContent = 'هذا الحساب مسجل بالفعل. الرجاء تسجيل الدخول بدلاً من ذلك.';
+                return;
+            }
+            try {
+                const res = await fetch('/auth/google', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id_token: idToken })
+                });
+                if (!res.ok) throw new Error(`Google auth failed: ${res.statusText}`);
+                authenticated = true;
+                closeAuthModal();
+                signUpBtn.hidden = true;
+                signInBtn.hidden = true;
+                signOutBtn.hidden = false;
+                await loadSessions();
+                const firstLi = document.querySelector('#sessionList li');
+                if (firstLi) firstLi.click();
+            } catch (err) {
+                authError.textContent = err.message;
+            }
+        }
+
+        // ── INIT ──
+        const avatarWaiting = document.getElementById('avatarWaiting'),
+            avatarTalking = document.getElementById('avatarTalking'),
+            audioEl = document.getElementById('responseAudio'),
+            recordBtn = document.getElementById('recordBtn'),
+            stopBtn = document.getElementById('stopBtn');
+        let isRecording = false;
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            updateSidebarToggle();
+            avatarWaiting.load();
+            avatarTalking.load();
+            audioEl.onplay = () => {
+                avatarWaiting.style.display = 'none';
+                avatarTalking.style.display = 'block';
+            };
+            audioEl.onended = () => {
+                avatarTalking.style.display = 'none';
+                avatarWaiting.style.display = 'block';
+            };
+
+            // restore existing session cookie
+            try {
+                const check = await fetch('/sessions', { credentials: 'include' });
+                if (check.ok) {
+                    authenticated = true;
+                    signUpBtn.hidden = true;
+                    signInBtn.hidden = true;
+                    signOutBtn.hidden = false;
+                    await loadSessions();
+                    const firstLi = document.querySelector('#sessionList li');
+                    if (firstLi) firstLi.click();
+                }
+            } catch {
+                // not authenticated
+            }
+
+            // Safely initialize Google Identity if available
+            if (
+                window.google &&
+                google.accounts &&
+                google.accounts.id &&
+                typeof google.accounts.id.initialize === 'function'
+            ) {
+                google.accounts.id.initialize({
+                    client_id: '179290570443-m7j4913a76t2j1g1o3rdgpv05od2q2ng.apps.googleusercontent.com',
+                    callback: handleGoogleCredential,
+                    auto_select: false
+                });
+                google.accounts.id.renderButton(
+                    document.querySelector('.g_id_signin'),
+                    { theme: 'outline', size: 'large' }
+                );
+            } else {
+                console.warn('⚠️ Google Identity Services not available — skipping init');
+            }
         });
 
-        // —— VOICE CHAT ——
-        recordBtn.addEventListener("click", async () => {
+        // ── SESSION MANAGEMENT & CHAT LOGIC ──
+        let currentSessionId = null,
+            chatHistory = [];
+        const newChatBtn = document.getElementById('newChatBtn'),
+            sessionList = document.getElementById('sessionList');
+
+        async function loadSessions() {
+            if (!authenticated) return;
+            const res = await authFetch('/sessions');
+            if (!res.ok) {
+                sessionList.innerHTML = '';
+                return;
+            }
+            const { sessions } = await res.json();
+            sessionList.innerHTML = '';
+            sessions.forEach(s => {
+                const li = document.createElement('li');
+                li.dataset.id = s.session_id;
+                if (s.session_id === currentSessionId) li.classList.add('active');
+                li.innerHTML = `
+          <span class="session-label">${s.name}</span>
+          <button class="ellipsis-btn">⋮</button>
+          <div class="context-menu">
+            <button class="rename-action">Rename</button>
+            <button class="delete-action">Delete</button>
+          </div>`;
+                sessionList.appendChild(li);
+            });
+        }
+
+        // rename & delete logic
+        const deleteModal = document.getElementById('deleteModal'),
+            modalSessionName = document.getElementById('modalSessionName'),
+            modalCancelBtn = document.getElementById('modalCancel'),
+            modalConfirmBtn = document.getElementById('modalConfirmDelete');
+        let liToDelete = null;
+
+        sessionList.addEventListener('click', async e => {
+            const li = e.target.closest('li');
+            if (!li) return;
+            const menu = li.querySelector('.context-menu');
+
+            if (e.target.matches('.ellipsis-btn')) {
+                e.stopPropagation();
+                document.querySelectorAll('.context-menu.active')
+                    .forEach(m => m.classList.remove('active'));
+                menu.classList.toggle('active');
+                return;
+            }
+
+            if (e.target.matches('.rename-action')) {
+                menu.classList.remove('active');
+                const label = li.querySelector('.session-label'),
+                    oldName = label.textContent,
+                    input = document.createElement('input');
+                input.type = 'text';
+                input.value = oldName;
+                input.style.width = 'calc(100% - 2rem)';
+                li.replaceChild(input, label);
+                input.focus();
+                input.addEventListener('keydown', evt => {
+                    if (evt.key === 'Enter') { evt.preventDefault(); input.blur(); }
+                });
+                input.addEventListener('blur', async () => {
+                    const newName = input.value.trim() || oldName;
+                    const res = await authFetch(
+                        `/sessions/${li.dataset.id}/rename`,
+                        {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ name: newName })
+                        }
+                    );
+                    if (res.ok) {
+                        label.textContent = newName;
+                        li.replaceChild(label, input);
+                    }
+                });
+                return;
+            }
+
+            if (e.target.matches('.delete-action')) {
+                menu.classList.remove('active');
+                liToDelete = li;
+                modalSessionName.textContent =
+                    li.querySelector('.session-label').textContent;
+                deleteModal.classList.remove('hidden');
+                return;
+            }
+
+            selectSession(li.dataset.id, li);
+        });
+
+        modalCancelBtn.addEventListener('click', () => {
+            deleteModal.classList.add('hidden');
+            liToDelete = null;
+        });
+
+        modalConfirmBtn.addEventListener('click', async () => {
+            if (!liToDelete) return;
+            const res = await authFetch(
+                `/sessions/${liToDelete.dataset.id}/delete`,
+                { method: 'DELETE' }
+            );
+            if (res.ok) {
+                if (liToDelete.classList.contains('active')) {
+                    currentSessionId = null;
+                    chatHistory = [];
+                    renderChat();
+                }
+                liToDelete.remove();
+                liToDelete = null;
+            }
+            deleteModal.classList.add('hidden');
+        });
+
+        newChatBtn.addEventListener('click', async () => {
+            const res = await authFetch('/sessions/new', { method: 'POST' });
+            if (res.ok) {
+                const { session_id } = await res.json();
+                currentSessionId = session_id;
+                chatHistory = [];
+                renderChat();
+                await loadSessions();
+            }
+        });
+
+        async function selectSession(id, li) {
+            if (currentSessionId) {
+                sessionHistories[currentSessionId] = chatHistory;
+            }
+            currentSessionId = id;
+            Array.from(sessionList.children).forEach(c => c.classList.remove('active'));
+            li.classList.add('active');
+
+            const res = await authFetch(`/sessions/${id}/history`);
+            if (!res.ok) {
+                alert('Session not found or unauthorized');
+                return;
+            }
+            const { history } = await res.json();
+            chatHistory = history;
+            sessionHistories[id] = history;
+            renderChat();
+        }
+
+        async function ensureSession() {
+            if (!currentSessionId) newChatBtn.click();
+        }
+
+        // ── CHAT / RAG / TTS / STT / TRANSLATE ──
+        const ta = document.getElementById('questionInput'),
+            form = document.getElementById('chatForm'),
+            sendBtn = document.getElementById('sendBtn'),
+            chatHistoryEl = document.getElementById('chatHistory');
+
+        ta.addEventListener('input', () => {
+            ta.style.height = 'auto';
+            ta.style.height = Math.min(ta.scrollHeight, 150) + 'px';
+        });
+        ta.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+            }
+        });
+
+        function formatMessage(raw) {
+            let t = raw.replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                .replace(/\*\*([^*]+)\*\*:?/g, (_, h) => `<strong>${h.trim()}:</strong>`);
+            const lines = t.split('\n'), out = [];
+            let inList = false,
+                bulletRe = /^\s*[\*\-\+]\s+(.*)/;
+            for (let l of lines) {
+                const m = l.match(bulletRe);
+                if (m) {
+                    if (!inList) { out.push('<ul>'); inList = true; }
+                    out.push(`<li>${m[1]}</li>`);
+                } else {
+                    if (inList) { out.push('</ul>'); inList = false; }
+                    if (l.trim() !== '') out.push(`<p>${l}</p>`);
+                }
+            }
+            if (inList) out.push('</ul>');
+            return out.join('');
+        }
+
+        let mediaRecorder, audioChunks = [], userStream, waitingLoaderActive = false, typingInterval;
+
+        function renderChat() {
+            chatHistoryEl.innerHTML = '';
+            chatHistory.forEach((m, i) => {
+                if (m.role === 'waiting') {
+                    chatHistoryEl.innerHTML += `
+            <div class="msg-row msg-bot waiting-loader-bubble">
+              <div class="waiting-loader">
+                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+              </div>
+            </div>`;
+                    return;
+                }
+                const cls = m.role === 'user' ? 'msg-user' : 'msg-bot',
+                    isAr = /[\u0600-\u06FF]/.test(m.text || ''),
+                    dir = isAr ? 'rtl' : 'ltr',
+                    html = formatMessage(m.text || '');
+
+                let bubble = `<div class="msg-bubble" id="bubble-${i}" dir="${dir}">${html}</div>`;
+
+                // persist both new and history audio
+                const audioSrc = m.audio || m.audio_url;
+                if (audioSrc) {
+                    bubble += `<div class="audio-row"><audio controls src="${audioSrc}"></audio></div>`;
+                }
+
+                if (m.role === 'assistant' && m.citation) {
+                    bubble += `<div class="citation-list">${m.citation}</div>`;
+                }
+                if (m.role === 'assistant' && m.text.trim()) {
+                    let label = 'Translate';
+                    if (m._origText) label = m._showingOrig ? 'Translate' : 'Original';
+                    bubble += `<button class="inline-translate" data-idx="${i}">${label}</button>`;
+                }
+
+                chatHistoryEl.innerHTML += `<div class="msg-row ${cls}">${bubble}</div>`;
+            });
+            chatHistoryEl.scrollTop = chatHistoryEl.scrollHeight;
+        }
+
+        function addHistory(r, t, a = null, c = null) {
+            chatHistory.push({ role: r, text: t, audio: a, citation: c });
+            renderChat();
+        }
+        function showLoader() {
+            if (!waitingLoaderActive) {
+                waitingLoaderActive = true;
+                chatHistory.push({ role: 'waiting' });
+                renderChat();
+            }
+        }
+        function removeLoader() {
+            if (waitingLoaderActive) {
+                waitingLoaderActive = false;
+                chatHistory = chatHistory.filter(x => x.role !== 'waiting');
+                renderChat();
+            }
+        }
+        function lockControls(f) {
+            recordBtn.disabled = f;
+            stopBtn.disabled = f;
+            sendBtn.disabled = f;
+            ta.disabled = f;
+        }
+
+        // ── AUTO‑RENAME SETUP ──
+        const autoRenamed = new Set();
+        async function maybeAutoRename() {
+            const realMsgs = chatHistory.filter(m => m.role !== 'waiting').length;
+            if (!currentSessionId || autoRenamed.has(currentSessionId) || realMsgs < 3) return;
+            autoRenamed.add(currentSessionId);
+
+            // call correct endpoint
+            const res = await authFetch(
+                `/sessions/${currentSessionId}/autosummary`,
+                { method: 'POST' }
+            );
+            if (!res.ok) return;
+            const { name } = await res.json();
+            const li = sessionList.querySelector(`li[data-id="${currentSessionId}"]`);
+            if (li) li.querySelector('.session-label').textContent = name;
+        }
+
+        // ── TYPING SIMULATION ──
+        function showTyping(ans, arr, idx, aud, cit) {
+            const b = document.getElementById(`bubble-${idx}`),
+                arab = /[\u0600-\u06FF]/.test(ans);
+            b.setAttribute('dir', arab ? 'rtl' : 'ltr');
+            avatarWaiting.style.display = 'none';
+            avatarTalking.style.display = 'block';
+            if (aud) { audioEl.src = aud; audioEl.play(); }
+            let i = 0;
+            clearInterval(typingInterval);
+            typingInterval = setInterval(() => {
+                if (i < arr.length) {
+                    b.innerHTML = formatMessage(arr[i++]);
+                } else {
+                    clearInterval(typingInterval);
+                    chatHistory[idx].text = ans;
+                    chatHistory[idx].audio = aud;
+                    chatHistory[idx].citation = cit;
+                    renderChat();
+                    maybeAutoRename();
+                    if (!aud) {
+                        avatarTalking.style.display = 'none';
+                        avatarWaiting.style.display = 'block';
+                    }
+                }
+            }, 25);
+        }
+
+        // ── SEND QUESTION ──
+        async function sendQuestion(text) {
+            await ensureSession();
+            lockControls(true);
+            addHistory('user', text);
+            showLoader();
+            try {
+                const fd = new FormData();
+                fd.append('question', text);
+                fd.append('history', JSON.stringify(chatHistory.filter(m => m.role !== 'waiting')));
+                fd.append('session_id', currentSessionId);
+                const res = await authFetch('/chat/', { method: 'POST', body: fd });
+                removeLoader();
+                if (!res.ok) {
+                    addHistory('assistant', 'Oops! Something went wrong.');
+                } else {
+                    const d = await res.json(),
+                        idx = chatHistory.length;
+                    chatHistory.push({ role: 'assistant', text: '', audio: null, citation: d.citation });
+                    renderChat();
+                    if (d.typing_simulation) {
+                        showTyping(d.answer, d.typing_simulation, idx, d.audio_url, d.citation);
+                    } else {
+                        chatHistory[idx].text = d.answer;
+                        chatHistory[idx].audio = d.audio_url;
+                        chatHistory[idx].citation = d.citation;
+                        renderChat();
+                        await maybeAutoRename();
+                        if (d.audio_url) audioEl.src = d.audio_url;
+                    }
+                }
+            } catch {
+                removeLoader();
+                addHistory('assistant', 'Network error—please try again.');
+            }
+            lockControls(false);
+        }
+
+        // ── FORM & BUTTON HOOKUPS ──
+        form.addEventListener('submit', e => {
+            e.preventDefault();
+            if (!authenticated) { openAuthModal('Sign In'); return; }
+            const v = ta.value.trim();
+            if (v) sendQuestion(v);
+            ta.value = '';
+            ta.style.height = 'auto';
+        });
+        sendBtn.addEventListener('click', () => {
+            if (!authenticated) { openAuthModal('Sign In'); return; }
+            const v = ta.value.trim();
+            if (v) sendQuestion(v);
+            ta.value = '';
+            ta.style.height = 'auto';
+        });
+
+        // ── RECORD BUTTON ──
+        recordBtn.addEventListener('click', async () => {
+            isRecording = true;
+            recordBtn.style.display = 'none';
+            stopBtn.style.display = 'inline-flex';
+            stopBtn.disabled = false;
+
             userStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorder = new MediaRecorder(userStream, { mimeType: "audio/webm" });
+            mediaRecorder = new MediaRecorder(userStream, { mimeType: 'audio/webm' });
             audioChunks = [];
+            lockControls(true);
+
             mediaRecorder.ondataavailable = e => {
-                if (e.data.size > 0) audioChunks.push(e.data);
+                if (e.data.size) audioChunks.push(e.data);
             };
             mediaRecorder.onstop = async () => {
-                const blob = new Blob(audioChunks, { type: "audio/webm" });
-                const form = new FormData();
-                form.append("audio", blob, "question.webm");
+                isRecording = false;
+                stopBtn.style.display = 'none';
+                recordBtn.style.display = 'inline-flex';
 
-                avatarEl.src = "/static/avatar talking.mp4";
-                const res = await fetch("/ask/", { method: "POST", body: form });
-                const data = await res.json();
-
-                txtEl.textContent = data.transcript;
-                ansEl.textContent = data.answer;
-                citeEl.innerHTML = data.citation
-                    ? data.citation.replace(/\n/g, "<br/>")
-                    : "—";
-
-                audioEl.src = data.audio_url;
-                audioEl.onplay = () => avatarEl.src = "/static/avatar talking.mp4";
-                audioEl.onended = () => avatarEl.src = "/static/avatar waiting.mp4";
-                audioEl.play();
-
-                userStream.getTracks().forEach(t => t.stop());
-                recordBtn.disabled = false;
+                const blob = new Blob(audioChunks, { type: 'audio/webm' });
+                let transcript = '';
+                try {
+                    const f = new FormData();
+                    f.append('audio', blob, 'q.webm');
+                    const r = await authFetch('/transcribe/', { method: 'POST', body: f });
+                    transcript = (await r.json()).transcript || '';
+                } catch { }
+                lockControls(false);
+                if (!transcript) {
+                    addHistory('assistant', 'Sorry—I couldn’t transcribe.');
+                } else {
+                    sendQuestion(transcript);
+                }
             };
-
             mediaRecorder.start();
-            recordBtn.disabled = true;
-            stopBtn.disabled = false;
         });
 
-        stopBtn.addEventListener("click", () => {
+        // ── STOP BUTTON ──
+        stopBtn.addEventListener('click', () => {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
             stopBtn.disabled = true;
-            mediaRecorder.stop();
+        });
+
+        // ── INLINE TRANSLATE ──
+        chatHistoryEl.addEventListener('click', async e => {
+            if (!e.target.classList.contains('inline-translate')) return;
+            const btn = e.target, idx = +btn.dataset.idx, msg = chatHistory[idx];
+            if (!msg._origText) {
+                msg._origText = msg.text;
+                msg._origAudio = msg.audio || msg.audio_url;
+                msg._origCitation = msg.citation;
+                msg._showingOrig = true;
+            }
+            if (msg._showingOrig) {
+                btn.disabled = true; btn.textContent = 'Translating…';
+                try {
+                    const resp = await authFetch('/translate/', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ text: msg._origText })
+                    });
+                    const d = await resp.json(),
+                        trText = d.translation || msg._origText,
+                        trAudio = d.audio_url || msg._origAudio,
+                        trCit = (d.citation || 'Translated by AI').replace(/^[-\s]*/, ''),
+                        sim = [...trText].map((_, i) => trText.slice(0, i + 1));
+                    msg._translatedText = trText;
+                    msg._translatedAudio = trAudio;
+                    msg._translatedCitation = trCit;
+                    showTyping(trText, sim, idx, trAudio, trCit);
+                    btn.textContent = 'Original';
+                    msg._showingOrig = false;
+                } catch { } finally {
+                    btn.disabled = false;
+                }
+            } else {
+                const oText = msg._origText,
+                    oAudio = msg._origAudio,
+                    oCit = msg._origCitation,
+                    sim = [...oText].map((_, i) => oText.slice(0, i + 1));
+                showTyping(oText, sim, idx, oAudio, oCit);
+                btn.textContent = 'Translate';
+                msg._showingOrig = true;
+            }
         });
     </script>
 </body>

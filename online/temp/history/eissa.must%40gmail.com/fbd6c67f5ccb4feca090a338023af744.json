@@ -1,0 +1,22 @@
+[
+  {
+    "role": "user",
+    "text": "hello"
+  },
+  {
+    "role": "assistant",
+    "text": "Hello! How can I help you today?",
+    "citation": "",
+    "audio_url": "/audio/2d9e65bd54274712b6a40665f6f36706_out.wav"
+  },
+  {
+    "role": "user",
+    "text": "disucss the object detection"
+  },
+  {
+    "role": "assistant",
+    "text": "Object detection is a subtask of computer vision that involves identifying and locating objects within an image or video. It combines techniques from object recognition, which focuses on categorizing objects into classes, and feature detection, which identifies key points or features in an image.\n\nIn the context of object detection, we typically use algorithms to scan through an image and identify regions of interest where specific objects are present. These algorithms often rely on deep learning models, such as convolutional neural networks (CNNs), that have been trained on large datasets of labeled images.\n\nThe goal of object detection is to output a set of bounding boxes around the detected objects, along with their corresponding class labels and confidence scores. This information can be used for various applications, including image classification, segmentation, tracking, and robotics.\n\nSome common techniques used in object detection include:\n\n* Region-based convolutional neural networks (R-CNNs)\n* Fast R-CNN\n* Faster R-CNN\n* You Only Look Once (YOLO)\n\nThese methods have achieved state-of-the-art performance on various benchmark datasets, such as PASCAL VOC and COCO.",
+    "citation": "- 02_Object Detection.pdf (page 1)\n- 04_Feature Detection and Matching.pdf (page 3)\n- 04_Feature Detection and Matching.pdf (page 14)",
+    "audio_url": "/audio/8ad93fff5a7549188b2bf2d0d8c039db_out.wav"
+  }
+]

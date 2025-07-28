@@ -1,0 +1,32 @@
+[
+  {
+    "role": "user",
+    "text": "hello"
+  },
+  {
+    "role": "assistant",
+    "text": "Hey! Ask me anything from your material.",
+    "citation": "",
+    "audio_url": "/audio/63faf1fe276d4209b872f8a76a272d28_out.wav"
+  },
+  {
+    "role": "user",
+    "text": "what is object detection"
+  },
+  {
+    "role": "assistant",
+    "text": "The main task in object detection is to put accurate bounding boxes around all the objects of interest and to correctly label such objects.",
+    "citation": "- 02_Object Detection.pdf (page 10)\n- 02_Object Detection.pdf (page 1)\n- 04_Feature Detection and Matching.pdf (page 14)",
+    "audio_url": "/audio/b528148d897c4e938a07ebd603cbf69b_out.wav"
+  },
+  {
+    "role": "user",
+    "text": "explain more"
+  },
+  {
+    "role": "assistant",
+    "text": "Object detection is a task in computer vision where you want to identify and locate objects within an image or video. The goal is to put a bounding box around each object of interest, like a car or a person, and label it correctly.\n\nThink of it like trying to find specific items on a shelf. You need to not only identify what's there but also pinpoint its exact location so you can pick it up. In the same way, in object detection, you're identifying objects within an image and specifying where they are by drawing a box around them.\n\nTo achieve this, you often use features extracted from images, which help your model understand what's going on in the scene. These features can be thought of as building blocks that describe different aspects of the image, like edges or textures.\n\nNow, let me ask: How do these feature descriptions relate to object detection?",
+    "citation": "- 04_Feature Detection and Matching.pdf (page 50)\n- 05_Image Stitching.pdf (page 7)\n- 05_Image Stitching.pdf (page 81)",
+    "audio_url": "/audio/30159389252c44c290ac635a87ba369f_out.wav"
+  }
+]
