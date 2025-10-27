@@ -1,144 +1,675 @@
-# Voice-Enabled RAG Tutor
+# 🤖 RoboMust - AI-Powered Educational Platform
 
-A self‑hosted, voice‑enabled Retrieval‑Augmented‑Generation (RAG) tutor that can serve as an expert in *any* domain—from computer vision to NLP, finance, healthcare, and beyond. Speak your question into the mic; the system transcribes it, retrieves relevant document chunks, generates a grounded answer with a local LLM, and returns both text and TTS audio—complete with avatar animations.
+<div align="center">
+
+**An intelligent voice-enabled learning assistant combining RAG, document intelligence, and interactive study materials**
+
+[![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![Ollama](https://img.shields.io/badge/Ollama-000000?style=for-the-badge&logo=ollama&logoColor=white)](https://ollama.ai/)
+[![ChromaDB](https://img.shields.io/badge/ChromaDB-FF6F00?style=for-the-badge)](https://www.trychroma.com/)
+[![LangChain](https://img.shields.io/badge/LangChain-1C3C3C?style=for-the-badge&logo=langchain&logoColor=white)](https://www.langchain.com/)
+[![Whisper](https://img.shields.io/badge/Whisper-412991?style=for-the-badge&logo=openai&logoColor=white)](https://github.com/openai/whisper)
+
+</div>
 
 ---
 
-## 📂 Project Structure
+## 📋 Overview
 
-```plaintext
-.
-├── Avatar/                   # waiting & speaking avatar animations (MP4)
-│   ├── avatar waiting.mp4
-│   └── avatar talking.mp4
-├── config/
-│   └── settings.yaml         # optional configuration flags
-├── data/
-│   ├── raw/                  # put your domain PDFs & PPTX files here
-│   └── chunks/               # auto‑generated JSON document chunks
-├── db/
-│   └── chroma_index/         # persisted Chroma vectorstore
-├── offline/                  # four-step offline indexing pipeline
-│   ├── loaders.py            # (1) load PDFs + PPTX → Documents
-│   ├── splitter.py           # (2) group pages & split into text chunks
-│   ├── embedder.py           # (3) sanitize & prepare chunk metadata
-│   └── indexer.py            # (4) embed & persist chunks into Chroma
-├── online/
-│   ├── stt/
-│   │   ├── whisper_stt.py    # faster‑whisper wrapper (English-only)
-│   │   └── record_test.py    # CLI for mic testing & transcription
-│   ├── retrieval/
-│   │   └── retriever.py      # load Chroma & similarity search
-│   ├── llm/
-│   │   └── inference.py      # build prompt, call LLM, format citations
-│   ├── tts/
-│   │   └── tts_service.py    # synthesize answer to WAV via TTS engine
-│   ├── temp/                 # working audio files (in/out)
-│   └── server.py             # FastAPI app (endpoints `/ask/` & `/chat/`)
-├── index.html                # browser UI (record, display, playback)
-├── README.md                 # this file
-├── requirements.txt          # pinned dependencies
-└── test_output.wav           # example recording
+**RoboMust** is an intelligent AI-powered educational platform that revolutionizes how students interact with course materials. By combining **Retrieval-Augmented Generation (RAG)**, **voice interaction**, and **advanced document processing**, it provides an immersive learning experience for academic institutions.
+
+The platform features a comprehensive **Materials Reading Interface** where students can read, study, and listen to course documents with AI-powered text-to-speech, alongside an **intelligent chatbot** that answers questions based on uploaded course materials. Built with **multilingual support** (English/Arabic), **role-based access control**, and **course management** capabilities.
+
+> **⚠️ Important Note:**  
+> This repository represents an **earlier version** of RoboMust for demonstration purposes. The **current production version** includes significantly enhanced features, advanced AI capabilities, and proprietary integrations that are confidential. Key new features in the production version include the **Materials Reading Interface**, **advanced document extraction**, **bulk upload**, **comprehensive analytics dashboards**, and many performance optimizations. If you need screenshots or additional information about the production system, please reach out.
+
+---
+
+## 🚀 Quick Feature Overview
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| 📖 **Materials Reader** | Interactive document viewer with TTS read-aloud | ✅ Production |
+| 💬 **AI Chat** | RAG-powered Q&A from course materials | ✅ Production |
+| 🎤 **Voice Interface** | Speech-to-text and text-to-speech | ✅ Production |
+| 📚 **Course Management** | Multi-course platform with enrollments | ✅ Production |
+| 🔐 **Authentication** | Email/Google OAuth with JWT + RBAC | ✅ Production |
+| 📊 **Analytics Dashboard** | Course stats, student insights, exports | ✅ Production |
+| 🌍 **Multilingual** | Native Arabic + English support | ✅ Production |
+| 📄 **Smart Upload** | Bulk upload with AI extraction (Docling) | ✅ Production |
+| 🎨 **Modern UI** | Dark/light themes, responsive design | ✅ Production |
+| 🔔 **Notifications** | Real-time document alerts | ✅ Production |
+
+---
+
+## ✨ Key Features
+
+### 🔐 **Authentication & Authorization**
+- **Multi-provider Authentication**
+  - Email/password signup with bcrypt password hashing
+  - Google OAuth 2.0 integration for single sign-on
+  - JWT-based session management with secure HTTP-only cookies
+  
+- **Role-Based Access Control (RBAC)**
+  - Three role types: `student`, `professor`, `admin`
+  - Professor invitation code verification system
+  - Dynamic role assignment on first signup
+  - Admin privileges via environment configuration
+  - Auth state persistence with `/auth/me` endpoint
+
+---
+
+### 📚 **Course Management System**
+- **Full CRUD Operations**
+  - Course creation (admin-only) with unique course identifiers
+  - Course listing (all courses + enrolled courses)
+  - Course update (name, description)
+  - Course deletion with cascade cleanup
+  
+- **User-Course Relationships**
+  - Professor assignment to courses
+  - Bulk student enrollment
+  - Student self-enrollment/unenrollment
+  - Course-scoped document isolation
+
+---
+
+### 📄 **Intelligent Document Management**
+- **Document Upload & Processing**
+  - Course-scoped document uploads (professors/admins only)
+  - Automatic vector embedding with **ChromaDB** integration
+  - Support for multiple formats: PDF, PPTX, DOCX, XLSX
+  - Advanced PDF extraction using **Docling** (Granite AI)
+  - Drag-and-drop file upload interface
+  - File type validation and size limits
+  - Bulk document upload with progress tracking
+  
+- **Document Operations**
+  - Document listing by course
+  - Document preview modal
+  - Document download
+  - Document deletion with ChromaDB cleanup
+  - Client-side search and filtering
+  
+---
+
+### 📖 **Materials Reading & Study Interface** ⭐ *NEW FEATURE*
+
+The **Materials page** is a comprehensive document reader designed for immersive studying, featuring advanced text extraction and voice synthesis capabilities.
+
+- **Smart Document Viewer**
+  - Clean, distraction-free reading interface optimized for studying
+  - Enhanced typography with proper font sizing and line spacing
+  - Course-scoped document access (students can only view documents from enrolled courses)
+  - Support for multiple formats: **PDF, PPTX, DOCX, XLSX**
+  - Real-time document availability checking
+  
+- **Advanced Text Extraction**
+  - **Docling Integration** - IBM Granite AI for superior PDF extraction
+    - Handles complex layouts (multi-column, tables, headers/footers)
+    - Preserves document structure and formatting
+    - Extracts text from images using OCR
+    - Support for Arabic and English mixed documents
+  - **Asynchronous Processing** - Background extraction with progress tracking
+  - **Smart Caching** - Extracted content cached for instant loading
+  - **Fallback Systems** - PyMuPDF, python-docx, python-pptx for various formats
+  - Cache management with manual clear option
+  
+- **Read-Aloud (Text-to-Speech) Feature** 🔊
+  - **One-Click Audio Generation** - "Read Aloud" button for instant voice narration
+  - **High-Quality TTS** - Edge TTS engine with natural-sounding voices
+  - **Automatic Language Detection** - Detects Arabic/English and selects appropriate voice
+  - **Section-Based Reading** - Read specific sections or entire documents
+  - **Audio Streaming** - Progressive audio playback without waiting for full generation
+  - **Pause/Resume Controls** - Full audio player with playback controls
+  - **Speed Adjustment** - Control reading speed for optimal comprehension
+  - **Background Processing** - Non-blocking audio generation
+  
+- **Study Tools**
+  - Section navigation with jump-to-section functionality
+  - Progress tracking (current section indicator)
+  - Scroll position preservation
+  - Responsive design for mobile studying
+  - Dark mode support for comfortable reading
+  
+- **Performance Optimizations**
+  - Lazy loading for large documents
+  - Incremental text rendering
+  - Cached extraction results stored in `data/extracted_cache/`
+  - Task-based extraction status tracking
+  - Automatic cleanup of stale cache entries
+
+**Materials Router Endpoints:**
+- `GET /materials/{course_id}/{filename}` - Document reader interface
+- `POST /materials/api/content/{course_id}/{filename}/start` - Start async extraction
+- `GET /materials/api/content/{course_id}/{filename}/status/{task_id}` - Check extraction progress
+- `GET /materials/api/content/{course_id}/{filename}` - Get extracted content
+- `POST /materials/api/read-aloud` - Generate TTS audio for text
+- `POST /materials/api/clear-cache` - Clear extraction cache
+
+---
+
+### 💬 **RAG-Powered Chat System**
+- **Intelligent Question Answering**
+  - Course-scoped RAG retrieval from uploaded documents
+  - Context-aware responses with source citations
+  - Page reference extraction for accurate attribution
+  - Greeting detection (English/Arabic)
+  - Multilingual support with automatic language detection
+  
+- **Conversation Management**
+  - Session-based chat history
+  - Create, list, rename, and delete sessions
+  - Auto-summary generation for past conversations
+  - Persistent message history per session
+  
+- **Retrieval Engine**
+  - **ChromaDB** vector database for semantic search
+  - **FAISS** alternative for fast similarity search
+  - Hybrid search capabilities (keyword + semantic)
+  - Custom embedding models via sentence-transformers
+  - LangChain integration for flexible retrieval chains
+
+---
+
+### 🎤 **Voice Features**
+- **Speech-to-Text (STT)**
+  - **Whisper** integration with automatic language detection
+  - **Vosk** for offline multilingual recognition
+  - **SpeechRecognition** library for fast, accurate transcription
+  - Support for Arabic and English
+  - Audio format conversion (webm → wav via ffmpeg)
+  
+- **Text-to-Speech (TTS)**
+  - **Edge TTS** for high-quality voice synthesis
+  - Automatic language detection for Arabic/English
+  - Multiple voice options
+  - Streaming audio playback
+  
+- **Audio Processing**
+  - Real-time voice recording in browser
+  - Audio playback controls
+  - Format conversion and optimization
+  - Secure audio file handling
+
+---
+
+### 📊 **Statistics & Analytics**
+- **Overview Dashboard**
+  - System-wide statistics (total users, courses, documents)
+  - Activity summaries and trends
+  
+- **Course Analytics**
+  - Enrolled student count per course
+  - Document count by course
+  - Recent upload activity
+  - Course engagement metrics
+  
+- **Student Insights**
+  - Individual student activity tracking
+  - Course participation metrics
+  
+- **Search Analytics**
+  - Query pattern analysis
+  - Popular search terms
+  
+- **System Health Monitoring**
+  - Model status tracking
+  - Performance metrics
+  - Alert system for anomalies
+  
+- **Data Export**
+  - CSV/JSON export capabilities
+  - Custom date ranges and filters
+
+---
+
+### 🎨 **Modern User Interface**
+- **Responsive Design**
+  - Mobile-friendly responsive layout
+  - Clean, intuitive navigation
+  - Modal-based workflows
+  
+- **Theme System**
+  - Dark/light theme toggle
+  - CSS variable-based theming
+  - Theme persistence via localStorage
+  - Theme-aware Google Sign-In button
+  
+- **Enhanced UX**
+  - Loading states with skeleton loaders
+  - Button loading spinners
+  - Smooth fade-in animations
+  - Toast notifications (theme-aware)
+  - Upload progress indicators
+  - Animated avatar with waiting/talking states
+  - Typing simulation for AI responses
+  - Role toggle UI (student/professor pills)
+
+---
+
+### 🛠️ **Technical Infrastructure**
+
+#### **Backend Architecture**
+- **FastAPI** RESTful API with modular router design
+- **Modular Structure:**
+  ```
+  /routers
+    ├── auth.py          # Authentication & authorization
+    ├── courses.py       # Course management
+    ├── docs.py          # Document operations
+    ├── materials.py     # Document reading & read-aloud
+    ├── chat.py          # Chat interface
+    ├── ask.py           # Question answering
+    ├── transcribe.py    # Speech-to-text
+    ├── translate.py     # Translation services
+    ├── sessions.py      # Chat session management
+    ├── statistics.py    # Analytics & reporting
+    └── admin.py         # Admin operations
+  ```
+
+#### **AI & ML Stack**
+- **LLM Integration:** OpenAI GPT models, Ollama for local inference
+- **Embeddings:** Sentence-Transformers, HuggingFace models
+- **Document AI:** Docling (IBM Granite) for advanced PDF extraction
+- **Vector Databases:** ChromaDB (primary), FAISS (alternative)
+- **Framework:** LangChain for RAG pipelines and conversation chains
+
+#### **Data Persistence**
+- **Vector Storage:** ChromaDB for semantic search
+- **File Storage:** Course-scoped file system (`data/raw/<course_id>/`)
+- **User Data:** JSON-based storage for users, courses, enrollments
+- **Session Data:** Persistent chat history in JSON format
+- **Cache:** Extracted content caching for performance optimization
+
+#### **Security Features**
+- **Password Hashing:** bcrypt for secure password storage
+- **JWT Tokens:** HTTP-only cookies for session management
+- **CORS Configuration:** Configurable cross-origin policies
+- **Environment Variables:** Secrets management via `.env`
+- **Role-Based Access:** Fine-grained permission controls
+- **OAuth 2.0:** Google authentication integration
+
+#### **Performance Optimizations**
+- **Model Preloading:** Parallel model loading on startup for optimal performance
+- **Health Check Endpoint:** `/health` with model status reporting
+- **Caching:** Document extraction caching to reduce processing time
+- **Async Operations:** FastAPI async endpoints for concurrent requests
+- **Streaming Responses:** Efficient large file handling
+
+---
+
+## 🏗️ System Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      Frontend (HTML/JS)                      │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
+│  │  Chat UI     │  │ Documents UI │  │  Admin UI    │      │
+│  │  + Voice     │  │  + Materials │  │  + Analytics │      │
+│  └──────────────┘  └──────────────┘  └──────────────┘      │
+└─────────────────────────────────────────────────────────────┘
+                            ↓ REST API
+┌─────────────────────────────────────────────────────────────┐
+│                    FastAPI Backend                           │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
+│  │ Auth Router  │  │ Docs Router  │  │ Chat Router  │      │
+│  │ STT Router   │  │ TTS Router   │  │ Stats Router │      │
+│  └──────────────┘  └──────────────┘  └──────────────┘      │
+└─────────────────────────────────────────────────────────────┘
+                            ↓
+┌─────────────────────────────────────────────────────────────┐
+│                      AI/ML Layer                             │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
+│  │   Whisper    │  │   OpenAI     │  │   Docling    │      │
+│  │   (STT)      │  │   (LLM)      │  │   (Extract)  │      │
+│  └──────────────┘  └──────────────┘  └──────────────┘      │
+└─────────────────────────────────────────────────────────────┘
+                            ↓
+┌─────────────────────────────────────────────────────────────┐
+│                    Data Layer                                │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
+│  │  ChromaDB    │  │  File System │  │  JSON Store  │      │
+│  │  (Vectors)   │  │  (Documents) │  │  (Metadata)  │      │
+│  └──────────────┘  └──────────────┘  └──────────────┘      │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🛠️ Offline Indexing (4 Steps)
+## 🚀 Technology Stack
 
-1. **Load documents** (`offline/loaders.py`)
-   Reads PDF & PPTX files into LangChain `Document` objects with metadata.
-2. **Split into chunks** (`offline/splitter.py`)
-   Groups pages, then splits text into manageable chunks (size & overlap tunable).
-3. **Embed metadata** (`offline/embedder.py`)
-   Sanitizes metadata for Chroma; prepares chunk payloads.
-4. **Index in Chroma** (`offline/indexer.py`)
-   Embeds chunks with HuggingFace model, persists vectorstore in `db/chroma_index`.
-
----
-
-## 🚀 Pipeline Flowchart
-
-```mermaid
-flowchart TB
-    A[User Records Question] --> B[STT: WhisperModel]
-    B --> C[Text Transcript]
-    C --> D[Retrieval: Chroma Similarity Search]
-    D --> E[LLM: Prompt & Generate]
-    E --> F[Text Answer]
-    F --> G[TTS: Synthesize Audio]
-    G --> H[Response: Text & Voice]
-```
-
-> **Note:** Responses include both the **text** answer (displayed on UI or JSON) and **voice** (audio playback).
+| Category | Technologies |
+|----------|-------------|
+| **Backend** | FastAPI, Python 3.8+, Uvicorn |
+| **AI/LLM** | OpenAI GPT, Ollama, LangChain, HuggingFace Transformers |
+| **Vector DB** | ChromaDB, FAISS |
+| **Document AI** | Docling (IBM Granite), PyMuPDF, python-docx, python-pptx |
+| **Speech** | Whisper (OpenAI), Vosk, SpeechRecognition, Edge TTS |
+| **Authentication** | JWT (python-jose), Google OAuth 2.0, Bcrypt (passlib) |
+| **Audio Processing** | FFmpeg, pydub |
+| **Embeddings** | sentence-transformers, OpenAI embeddings |
+| **Frontend** | HTML5, CSS3, JavaScript (Vanilla), Jinja2 Templates |
+| **Deployment** | Docker-ready, environment-based configuration |
 
 ---
 
-## ⚙️ Installation & Setup
+## 📦 Installation
 
-1. **Clone & enter**
+### Prerequisites
+- Python 3.8 or higher
+- FFmpeg (for audio processing)
+- OpenAI API key (for LLM and embeddings)
+- Google OAuth credentials (optional, for SSO)
 
+### Setup
+
+1. **Clone the repository** (partial demo version)
    ```bash
-   git clone <repo_url> && cd voice‑chatbot
+   git clone <repository-url>
+   cd voice-chatbot-v5
    ```
 
-2. **Python env & install**
-
+2. **Create virtual environment**
    ```bash
-   python -m venv .venv
-   source .venv/bin/activate    # Linux/macOS
-   .venv\Scripts\activate.bat  # Windows
-   pip install --upgrade pip
+   python -m venv chatbot
+   # Windows
+   chatbot\Scripts\activate
+   # Linux/Mac
+   source chatbot/bin/activate
+   ```
+
+3. **Install dependencies**
+   ```bash
    pip install -r requirements.txt
    ```
 
-> No OCR/Poppler needed—PDFs load with `PyPDFLoader`, PPTX via `python-pptx`.
+4. **Configure environment variables**
+   Create a `.env` file in the project root:
+   ```env
+   # OpenAI Configuration
+   OPENAI_API_KEY=your_openai_api_key_here
+   
+   # JWT Secret (generate with: openssl rand -hex 32)
+   JWT_SECRET=your_secret_key_here
+   
+   # Admin Configuration
+   ADMIN_EMAILS=admin@example.com,another_admin@example.com
+   
+   # Google OAuth (optional)
+   GOOGLE_CLIENT_ID=your_google_client_id
+   GOOGLE_CLIENT_SECRET=your_google_client_secret
+   
+   # Professor Invitation Code
+   PROFESSOR_INVITE_CODE=your_invite_code
+   ```
+
+5. **Run the server**
+   ```bash
+   # Development
+   uvicorn online.server:app --reload --host 0.0.0.0 --port 8000
+   
+   # Or use the provided script
+   ./start_server.bat  # Windows
+   ```
+
+6. **Access the application**
+   ```
+   http://localhost:8000
+   ```
 
 ---
 
-## 🚀 Running the API
+## 📖 Usage
 
-```bash
-uvicorn online.server:app --reload --port 8000
-```
+### For Students
+1. **Sign up** with email/password or Google account
+2. **Enroll** in available courses
+3. **Upload** documents to course libraries (if permitted)
+4. **Chat** with the AI tutor about course materials
+5. **Use voice** for hands-free interaction
+6. **Read materials** with text-to-speech support
 
-* **POST** `/ask/` (audio upload) → returns JSON with `transcript`, `answer`, `citation`, `audio_url` and avatar URLs.
-* **POST** `/chat/` (form text) → returns pure-text + optional audio chat.
+### For Professors
+1. **Create courses** (if admin) or get assigned by admin
+2. **Upload** course materials (PDFs, PPTX, DOCX, XLSX)
+3. **Manage** student enrollments
+4. **Monitor** course analytics and document usage
+5. **Review** student chat interactions (if enabled)
 
----
-
-## 🎤 Web UI
-
-Visit `http://127.0.0.1:8000`:
-
-1. **Record** your question with mic.
-2. **Stop** → see **Transcript**, **Answer**, and hear audio with avatar animation.
-
----
-
-## 🔧 Customization
-
-* **LLM**: edit `online/llm/inference.py` to swap or tune the model.
-* **Chunking**: adjust parameters in `offline/splitter.py` (size, overlap).
-* **Retrieval**: tweak `top_k` or score threshold in `online/retrieval/retriever.py`.
-* **STT**: choose model size/device in `online/stt/whisper_stt.py`.
-* **TTS**: configure `online/tts/tts_service.py` for your preferred engine.
+### For Administrators
+1. **Create and manage** all courses
+2. **Assign** professors to courses
+3. **Manage** user roles and permissions
+4. **View analytics** across all courses and users
+5. **Export** data for reporting
+6. **Monitor** system health and performance
 
 ---
 
-## 📝 Troubleshooting
+## 🗂️ API Endpoints
 
-* **No transcript?**
+<details>
+<summary><b>Authentication</b></summary>
 
-  * Check mic permissions & format.
-  * Use `python online/stt/record_test.py` to record + transcribe.
+- `POST /auth/signup` - Register new user
+- `POST /auth/login` - Login with credentials
+- `POST /auth/google` - Google OAuth login
+- `GET /auth/me` - Get current user info
+- `POST /auth/logout` - Logout user
 
-* **Incomplete answers?**
+</details>
 
-  * Ensure `data/raw/` contains selectable text (not images).
-  * Adjust loader in `offline/loaders.py` or fallback settings.
+<details>
+<summary><b>Courses</b></summary>
 
-* **Chroma errors?**
+- `GET /courses` - List all courses
+- `GET /courses/my` - List enrolled courses
+- `POST /courses` - Create course (admin)
+- `PUT /courses/{id}` - Update course
+- `DELETE /courses/{id}` - Delete course (admin)
+- `POST /courses/{id}/enroll` - Enroll in course
+- `POST /courses/{id}/unenroll` - Unenroll from course
+- `POST /courses/{id}/assign-professor` - Assign professor (admin)
+- `POST /courses/{id}/assign-students` - Bulk assign students (admin)
 
-  * Remove `db/chroma_index/` and re-run indexing.
+</details>
 
-Happy teaching & learning across *any* domain! 🎓
+<details>
+<summary><b>Documents</b></summary>
+
+- `GET /documents` - Document management page
+- `GET /documents/list?course_id=X` - List course documents
+- `POST /documents/upload` - Upload document
+- `POST /documents/bulk-upload` - Upload multiple documents
+- `DELETE /documents/delete?path=X` - Delete document
+- `GET /docs/raw/{path}` - Download document
+
+</details>
+
+<details>
+<summary><b>Materials (Reading Interface)</b></summary>
+
+- `GET /materials/{course_id}/{filename}` - View document reader
+- `GET /materials/api/content/{course_id}/{filename}` - Get document content
+- `POST /materials/api/content/{course_id}/{filename}/start` - Start extraction
+- `GET /materials/api/content/{course_id}/{filename}/status/{task_id}` - Check extraction status
+- `POST /materials/api/read-aloud` - Generate TTS audio
+- `POST /materials/api/clear-cache` - Clear extraction cache
+
+</details>
+
+<details>
+<summary><b>Chat & AI</b></summary>
+
+- `POST /ask` - Ask question about course materials
+- `POST /chat` - Send chat message
+- `POST /translate` - Translate text
+- `POST /sessions/new` - Create new chat session
+- `GET /sessions` - List user sessions
+- `GET /sessions/{id}/history` - Get session history
+- `POST /sessions/{id}/rename` - Rename session
+- `DELETE /sessions/{id}/delete` - Delete session
+- `POST /sessions/{id}/autosummary` - Generate session summary
+
+</details>
+
+<details>
+<summary><b>Voice</b></summary>
+
+- `POST /stt/transcribe` - Transcribe audio to text
+- `POST /stt/transcribe_public` - Public transcription endpoint
+- `POST /tts/synthesize` - Convert text to speech
+
+</details>
+
+<details>
+<summary><b>Statistics & Analytics</b></summary>
+
+- `GET /statistics/overview` - System overview
+- `GET /statistics/courses` - Course analytics
+- `GET /statistics/courses/{id}` - Specific course stats
+- `GET /statistics/activity` - Activity timeline (admin)
+- `GET /statistics/students` - Student insights
+- `GET /statistics/search` - Search analytics
+- `GET /statistics/health` - System health (admin)
+- `GET /statistics/alerts` - System alerts
+- `GET /statistics/export/{type}` - Export data
+
+</details>
+
+<details>
+<summary><b>Admin</b></summary>
+
+- `GET /admin/users` - List all users
+- `POST /admin/users/role` - Modify user role
+- `GET /admin` - Admin dashboard
+
+</details>
+
+---
+
+## 🔒 Security Features
+
+- **Password Security:** Bcrypt hashing with salt
+- **Session Management:** JWT tokens with expiration
+- **HTTP-only Cookies:** Protection against XSS attacks
+- **CORS Configuration:** Controlled cross-origin access
+- **Role-Based Access Control:** Fine-grained permissions
+- **Environment Variables:** Secrets management
+- **Input Validation:** Pydantic models for request validation
+- **File Upload Restrictions:** Type and size validation
+
+---
+
+## 🌍 Multilingual Support
+
+The system automatically detects and handles:
+- **English** - Full support for English conversations and documents
+- **Arabic** - Native Arabic language support with proper RTL rendering
+- **Auto-detection** - Automatic language detection in chat and voice
+- **Mixed Content** - Handles documents with both English and Arabic text
+
+---
+
+## 🎯 Use Cases
+
+- **Educational Institutions:** Virtual teaching assistant for students with course-specific knowledge
+- **Corporate Training:** Internal knowledge base with voice interaction and multilingual support
+- **Documentation Systems:** Searchable document libraries with AI-powered Q&A
+- **Research Platforms:** Academic paper analysis with citation and source tracking
+- **E-Learning Platforms:** Comprehensive course material management with intelligent tutoring
+- **Accessibility:** Text-to-speech reading for students with visual impairments or reading difficulties
+- **Self-Study:** Independent learning with AI tutor available 24/7
+
+---
+
+## 🌟 What Makes RoboMust Unique?
+
+Unlike traditional learning management systems, RoboMust combines multiple AI technologies into a seamless experience:
+
+1. **Integrated Reading + Chat Experience** - Students can read materials and ask questions without switching platforms
+2. **Voice-First Design** - Natural voice interaction makes learning more accessible
+3. **Course-Scoped Intelligence** - AI responses are contextually aware of specific course materials
+4. **Multilingual Core** - Native support for English and Arabic (not just translation)
+5. **Advanced Document AI** - IBM Granite Docling handles complex PDFs that other systems struggle with
+6. **Read-Aloud Study Mode** - Converts any document into an audiobook-like experience
+7. **Role-Based Education Model** - Purpose-built for student/professor/admin workflows
+8. **Privacy-Focused** - Course-scoped data isolation ensures student privacy
+
+---
+
+
+
+## 📝 License
+
+**Proprietary Software** - RoboMust is confidential educational platform software developed for institutional use.
+
+---
+
+## 🔄 Version Information
+
+**This Repository:** Contains an earlier demonstration version of RoboMust  
+**Production Version:** Includes advanced features not shown here:
+- Enhanced Materials Reading Interface with async extraction
+- Bulk document upload with progress tracking  
+- Comprehensive statistics dashboards with data export
+- Advanced caching and performance optimizations
+- Additional AI-powered study tools
+- Proprietary integrations and business logic
+
+The production system is actively deployed in educational institutions and is not publicly available for confidentiality reasons.
+
+---
+
+## 📸 Screenshots & Documentation
+
+For screenshots of the production system or additional documentation about advanced features, feel free to reach out.
+
+---
+
+## 👤 Author & Credits
+
+**RoboMust** is developed and maintained by **[Eissa Islam](https://github.com/eissa2002)**
+
+**Core Development (Solo):**
+- 🔧 Full-stack development (Frontend + Backend + AI/ML)
+- 🤖 AI/RAG pipeline implementation and optimization
+- 📊 Analytics and statistics system
+- 🔐 Authentication and security architecture
+- 🎤 Voice features (STT/TTS) integration
+- 📖 Materials reading interface with async extraction
+- � Chat system and conversation management
+- 📚 Course management and document handling
+
+**Design Contributions:**
+- 🎨 Homepage UI/UX design - Team collaboration
+- � Avatar design and animations - Team collaboration
+
+> Special thanks to team members who contributed design assets for the homepage and avatar animations.
+
+---
+
+## 🤝 Contact & Support
+
+For questions, feature requests, collaboration opportunities, or to learn more about the production version:
+
+- **GitHub:** [@eissa2002](https://github.com/eissa2002)
+- **Email:** eissaislam.buss@gmail.com
+
+---
+
+## ⚠️ Disclaimer
+
+This repository represents an **earlier version** of RoboMust and is intended for **demonstration purposes only**. The current production deployment includes significantly more features, optimizations, and proprietary components that are not included in this public repository. Many advanced capabilities, production configurations, and sensitive business logic remain confidential.
+
+---
+
+<div align="center">
+
+**Built with ❤️ for Education**
+
+*Empowering students through AI-powered learning*
+
+</div>
