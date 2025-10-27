@@ -1,2 +1,14 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Tell GitHub to properly classify template files as vendored (not counted in language stats)
+templates/* linguist-vendored
+static/* linguist-vendored
+
+# Mark Python as the primary language
+*.py linguist-language=Python
+
+# Don't count documentation and data files heavily
+*.md linguist-documentation
+*.json linguist-data
+*.txt linguist-data
