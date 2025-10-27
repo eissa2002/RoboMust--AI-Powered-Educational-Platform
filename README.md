@@ -6,10 +6,21 @@
 
 [![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Ollama](https://img.shields.io/badge/Ollama-000000?style=for-the-badge&logo=ollama&logoColor=white)](https://ollama.ai/)
 [![ChromaDB](https://img.shields.io/badge/ChromaDB-FF6F00?style=for-the-badge)](https://www.trychroma.com/)
 [![LangChain](https://img.shields.io/badge/LangChain-1C3C3C?style=for-the-badge&logo=langchain&logoColor=white)](https://www.langchain.com/)
 [![Whisper](https://img.shields.io/badge/Whisper-412991?style=for-the-badge&logo=openai&logoColor=white)](https://github.com/openai/whisper)
+[![HuggingFace](https://img.shields.io/badge/HuggingFace-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black)](https://huggingface.co/)
+
+[![Edge TTS](https://img.shields.io/badge/Edge_TTS-0078D4?style=for-the-badge&logo=microsoftazure&logoColor=white)](https://github.com/rany2/edge-tts)
+[![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
+[![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/CSS)
+[![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+[![Jinja2](https://img.shields.io/badge/Jinja2-B41717?style=for-the-badge&logo=jinja&logoColor=white)](https://jinja.palletsprojects.com/)
+
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+[![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?style=for-the-badge&logo=prometheus&logoColor=white)](https://prometheus.io/)
 
 </div>
 
@@ -351,7 +362,8 @@ The **Materials page** is a comprehensive document reader designed for immersive
 | **Audio Processing** | FFmpeg, pydub |
 | **Embeddings** | sentence-transformers, OpenAI embeddings |
 | **Frontend** | HTML5, CSS3, JavaScript (Vanilla), Jinja2 Templates |
-| **Deployment** | Docker-ready, environment-based configuration |
+| **Deployment** | Docker, Docker Compose, environment-based configuration |
+| **Monitoring** | Prometheus (metrics), Grafana (dashboards) |
 
 ---
 
@@ -421,7 +433,110 @@ The **Materials page** is a comprehensive document reader designed for immersive
 
 ---
 
-## 📖 Usage
+## � Docker Deployment (Future Implementation)
+
+The production version includes full Docker containerization for easy deployment and scaling.
+
+### Docker Setup (Coming Soon)
+
+<details>
+<summary><b>Docker Compose Configuration</b></summary>
+
+```yaml
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+    volumes:
+      - ./data:/app/data
+      - ./db:/app/db
+    depends_on:
+      - postgres
+      - chromadb
+      
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: robomust
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      
+  chromadb:
+    image: chromadb/chroma:latest
+    ports:
+      - "8001:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+      
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+      
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+    volumes:
+      - grafana_data:/var/lib/grafana
+
+volumes:
+  postgres_data:
+  chroma_data:
+  prometheus_data:
+  grafana_data:
+```
+
+**Quick Start with Docker:**
+```bash
+# Build and run all services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f app
+
+# Stop all services
+docker-compose down
+```
+
+</details>
+
+### Monitoring & Observability
+
+The production system includes comprehensive monitoring:
+
+- **Prometheus** - Collects metrics from FastAPI application
+  - Request latency and throughput
+  - LLM inference times
+  - Document processing performance
+  - System resource usage
+  
+- **Grafana** - Visualizes metrics with custom dashboards
+  - Real-time performance monitoring
+  - Course activity heatmaps
+  - User engagement analytics
+  - AI model performance tracking
+
+**Access Monitoring Tools:**
+- Prometheus: `http://localhost:9090`
+- Grafana: `http://localhost:3000` (default: admin/admin)
+
+---
+
+## �📖 Usage
 
 ### For Students
 1. **Sign up** with email/password or Google account
