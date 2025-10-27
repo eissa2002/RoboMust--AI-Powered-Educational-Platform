@@ -12,8 +12,8 @@
 [![LangChain](https://img.shields.io/badge/LangChain-1C3C3C?style=for-the-badge&logo=langchain&logoColor=white)](https://www.langchain.com/)
 [![Whisper](https://img.shields.io/badge/Whisper-412991?style=for-the-badge&logo=openai&logoColor=white)](https://github.com/openai/whisper)
 [![HuggingFace](https://img.shields.io/badge/HuggingFace-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black)](https://huggingface.co/)
-
 [![Edge TTS](https://img.shields.io/badge/Edge_TTS-0078D4?style=for-the-badge&logo=microsoftazure&logoColor=white)](https://github.com/rany2/edge-tts)
+
 [![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
 [![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/CSS)
 [![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
@@ -34,6 +34,18 @@ The platform features a comprehensive **Materials Reading Interface** where stud
 
 > **⚠️ Important Note:**  
 > This repository represents an **earlier version** of RoboMust for demonstration purposes. The **current production version** includes significantly enhanced features, advanced AI capabilities, and proprietary integrations that are confidential. Key new features in the production version include the **Materials Reading Interface**, **advanced document extraction**, **bulk upload**, **comprehensive analytics dashboards**, and many performance optimizations. If you need screenshots or additional information about the production system, please reach out.
+
+---
+
+
+<div align="center">
+
+<p align="center">
+  <img src="Avatar/avatar_waiting.gif" alt="Animated avatar with waiting and talking states" width="300"/>
+</p>
+
+
+</div>
 
 ---
 
@@ -351,35 +363,47 @@ The **Materials page** is a comprehensive document reader designed for immersive
 
 ## 🚀 Technology Stack
 
+### Currently Implemented (Demo Version)
+
 | Category | Technologies |
 |----------|-------------|
 | **Backend** | FastAPI, Python 3.8+, Uvicorn |
-| **AI/LLM** | OpenAI GPT, Ollama, LangChain, HuggingFace Transformers |
+| **AI/LLM** | Ollama (local inference), LangChain, HuggingFace Transformers |
 | **Vector DB** | ChromaDB, FAISS |
 | **Document AI** | Docling (IBM Granite), PyMuPDF, python-docx, python-pptx |
 | **Speech** | Whisper (OpenAI), Vosk, SpeechRecognition, Edge TTS |
 | **Authentication** | JWT (python-jose), Google OAuth 2.0, Bcrypt (passlib) |
 | **Audio Processing** | FFmpeg, pydub |
-| **Embeddings** | sentence-transformers, OpenAI embeddings |
+| **Embeddings** | sentence-transformers, HuggingFace embeddings |
 | **Frontend** | HTML5, CSS3, JavaScript (Vanilla), Jinja2 Templates |
-| **Deployment** | Docker, Docker Compose, environment-based configuration |
-| **Monitoring** | Prometheus (metrics), Grafana (dashboards) |
+| **Data Storage** | JSON-based storage, File system |
+
+### Planned for Future Implementation
+
+| Category | Technologies | Purpose |
+|----------|-------------|---------|
+| **Database** | PostgreSQL | Relational data storage for users, courses, and metadata |
+| **Containerization** | Docker, Docker Compose | Application containerization and deployment |
+| **Monitoring** | Prometheus | Metrics collection and performance monitoring |
+| **Visualization** | Grafana | Real-time dashboards and analytics visualization |
+| **Cloud Services** | OpenAI GPT API | Enhanced LLM capabilities for production |
 
 ---
 
 ## 📦 Installation
 
+> **Note:** This is a demonstration version. The full production system includes additional dependencies and configuration not shown here.
+
 ### Prerequisites
 - Python 3.8 or higher
 - FFmpeg (for audio processing)
-- OpenAI API key (for LLM and embeddings)
-- Google OAuth credentials (optional, for SSO)
+- Ollama (for local LLM inference) - [Download here](https://ollama.ai/)
 
 ### Setup
 
-1. **Clone the repository** (partial demo version)
+1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/eissa2002/Voice-Enabled-RAG-Tutor.git
    cd voice-chatbot-v5
    ```
 
@@ -397,142 +421,49 @@ The **Materials page** is a comprehensive document reader designed for immersive
    pip install -r requirements.txt
    ```
 
-4. **Configure environment variables**
-   Create a `.env` file in the project root:
+4. **Install and configure Ollama**
+   ```bash
+   # Pull the model used in this demo
+   ollama pull qwen2.5:1.5b
+   ```
+
+5. **Configure environment variables** (Optional)
+   Create a `.env` file in the project root for optional features:
    ```env
-   # OpenAI Configuration
-   OPENAI_API_KEY=your_openai_api_key_here
-   
    # JWT Secret (generate with: openssl rand -hex 32)
    JWT_SECRET=your_secret_key_here
    
-   # Admin Configuration
-   ADMIN_EMAILS=admin@example.com,another_admin@example.com
+   # Admin Configuration (optional)
+   ADMIN_EMAILS=admin@example.com
    
-   # Google OAuth (optional)
-   GOOGLE_CLIENT_ID=your_google_client_id
-   GOOGLE_CLIENT_SECRET=your_google_client_secret
+   # Google OAuth (optional - not included in demo)
+   # GOOGLE_CLIENT_ID=your_google_client_id
+   # GOOGLE_CLIENT_SECRET=your_google_client_secret
    
-   # Professor Invitation Code
-   PROFESSOR_INVITE_CODE=your_invite_code
+   # Professor Invitation Code (optional)
+   PROFESSOR_INVITE_CODE=demo123
    ```
 
-5. **Run the server**
+6. **Run the server**
    ```bash
    # Development
    uvicorn online.server:app --reload --host 0.0.0.0 --port 8000
    
-   # Or use the provided script
-   ./start_server.bat  # Windows
+   # Or use the provided script (Windows)
+   start_server.bat
    ```
 
-6. **Access the application**
+7. **Access the application**
    ```
    http://localhost:8000
    ```
 
----
+### First-Time Setup
 
-## � Docker Deployment (Future Implementation)
-
-The production version includes full Docker containerization for easy deployment and scaling.
-
-### Docker Setup (Coming Soon)
-
-<details>
-<summary><b>Docker Compose Configuration</b></summary>
-
-```yaml
-version: '3.8'
-
-services:
-  app:
-    build: .
-    ports:
-      - "8000:8000"
-    environment:
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - JWT_SECRET=${JWT_SECRET}
-    volumes:
-      - ./data:/app/data
-      - ./db:/app/db
-    depends_on:
-      - postgres
-      - chromadb
-      
-  postgres:
-    image: postgres:15
-    environment:
-      POSTGRES_DB: robomust
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      
-  chromadb:
-    image: chromadb/chroma:latest
-    ports:
-      - "8001:8000"
-    volumes:
-      - chroma_data:/chroma/chroma
-      
-  prometheus:
-    image: prom/prometheus:latest
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus_data:/prometheus
-      
-  grafana:
-    image: grafana/grafana:latest
-    ports:
-      - "3000:3000"
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
-    volumes:
-      - grafana_data:/var/lib/grafana
-
-volumes:
-  postgres_data:
-  chroma_data:
-  prometheus_data:
-  grafana_data:
-```
-
-**Quick Start with Docker:**
-```bash
-# Build and run all services
-docker-compose up -d
-
-# View logs
-docker-compose logs -f app
-
-# Stop all services
-docker-compose down
-```
-
-</details>
-
-### Monitoring & Observability
-
-The production system includes comprehensive monitoring:
-
-- **Prometheus** - Collects metrics from FastAPI application
-  - Request latency and throughput
-  - LLM inference times
-  - Document processing performance
-  - System resource usage
-  
-- **Grafana** - Visualizes metrics with custom dashboards
-  - Real-time performance monitoring
-  - Course activity heatmaps
-  - User engagement analytics
-  - AI model performance tracking
-
-**Access Monitoring Tools:**
-- Prometheus: `http://localhost:9090`
-- Grafana: `http://localhost:3000` (default: admin/admin)
+1. **Create an account** - Sign up with email/password
+2. **Create a course** (admin role required for demo)
+3. **Upload documents** - Add PDFs, DOCX, or PPTX files
+4. **Start chatting** - Ask questions about your uploaded materials
 
 ---
 
@@ -715,7 +646,33 @@ Unlike traditional learning management systems, RoboMust combines multiple AI te
 
 ---
 
+## 🚧 Future Roadmap
 
+The following enhancements are planned for future implementation in the production version:
+
+### Infrastructure & Deployment
+- **🐳 Docker Containerization** - Full Docker and Docker Compose setup for easy deployment and scalability
+- **📊 Monitoring & Observability**
+  - **Prometheus** - Metrics collection for application performance, LLM inference times, and system resources
+  - **Grafana** - Real-time dashboards for monitoring course activity, user engagement, and system health
+  
+### Database & Storage
+- **🗄️ PostgreSQL Integration** - Migration from JSON-based storage to PostgreSQL for:
+  - Improved scalability and performance
+  - Better relational data management
+  - Advanced querying capabilities
+  - Transaction support and data integrity
+
+### AI & Cloud Services
+- **☁️ OpenAI GPT API** - Enhanced LLM capabilities with cloud-based models for production environments
+
+### Performance Enhancements
+- Horizontal scaling with load balancing
+- Redis caching for improved response times
+- CDN integration for static assets
+- Database connection pooling and optimization
+
+---
 
 ## 📝 License
 
