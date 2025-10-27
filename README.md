@@ -38,12 +38,11 @@ The platform features a comprehensive **Materials Reading Interface** where stud
 ---
 
 
-
 <div align="center">
 
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/eissa2002/RoboMust--AI-Powered-Educational-Platform/main/Avatar/avatar_waiting.gif" alt="Animated avatar with waiting and talking states" width="300"/>
+  <img src="https://github.com/user-attachments/assets/1d29af40-c48f-4d6c-a2be-f2f89356e08c" alt="Animated avatar with waiting and talking states" width="300"/>
 </p>
 
 </div>
