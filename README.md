@@ -293,10 +293,10 @@ The **Materials page** is a comprehensive document reader designed for immersive
   ```
 
 #### **AI & ML Stack**
-- **LLM Integration:** OpenAI GPT models, Ollama for local inference
+- **LLM Integration:**  Ollama for local inference
 - **Embeddings:** Sentence-Transformers, HuggingFace models
 - **Document AI:** Docling (IBM Granite) for advanced PDF extraction
-- **Vector Databases:** ChromaDB (primary), FAISS (alternative)
+- **Vector Databases:** ChromaDB
 - **Framework:** LangChain for RAG pipelines and conversation chains
 
 #### **Data Persistence**
