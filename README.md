@@ -1,4 +1,4 @@
-# 🤖 RoboMust - AI-Powered Educational Platform
+# RoboMust - AI-Powered Educational Platform
 
 <div align="center">
 
